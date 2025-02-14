@@ -32,26 +32,26 @@ type RSAKey struct {
 }
 
 // PrivateKey returns the private key.
-func (key *RSAKey) PrivateKey() *rsa.PrivateKey {
-	return key.key
+func (k *RSAKey) PrivateKey() *rsa.PrivateKey {
+	return k.key
 }
 
 // PrivateKeyBytes returns the private key in PKCS #1 or PKCS #8 format.
 // PKCS #1 is not recommended for security as it's considered weak and
 // can potentially be broken by modern computational capabilities.
-func (key *RSAKey) PrivateKeyBytes(usePKCS8 bool) ([]byte, error) {
+func (k *RSAKey) PrivateKeyBytes(usePKCS8 bool) ([]byte, error) {
 	if usePKCS8 {
-		return x509.MarshalPKCS8PrivateKey(key.key)
+		return x509.MarshalPKCS8PrivateKey(k.key)
 	}
-	return x509.MarshalPKCS1PrivateKey(key.key), nil
+	return x509.MarshalPKCS1PrivateKey(k.key), nil
 }
 
 // PrivateKeyPEM returns the private key in PKCS #1 or PKCS #8 PEM-encoded format.
 // PKCS #1 is not recommended for security as it's considered weak and
 // can potentially be broken by modern computational capabilities.
-func (key *RSAKey) PrivateKeyPEM(usePKCS8 bool) ([]byte, error) {
+func (k *RSAKey) PrivateKeyPEM(usePKCS8 bool) ([]byte, error) {
 	if usePKCS8 {
-		privateKeyPEM, err := x509.MarshalPKCS8PrivateKey(key.key)
+		privateKeyPEM, err := x509.MarshalPKCS8PrivateKey(k.key)
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +60,7 @@ func (key *RSAKey) PrivateKeyPEM(usePKCS8 bool) ([]byte, error) {
 			Bytes: privateKeyPEM,
 		}), nil
 	} else {
-		privateKeyPEM := x509.MarshalPKCS1PrivateKey(key.key)
+		privateKeyPEM := x509.MarshalPKCS1PrivateKey(k.key)
 		return pem.EncodeToMemory(&pem.Block{
 			Type:  "RSA PRIVATE KEY",
 			Bytes: privateKeyPEM,
@@ -69,27 +69,27 @@ func (key *RSAKey) PrivateKeyPEM(usePKCS8 bool) ([]byte, error) {
 }
 
 // PublicKey returns the public key.
-func (key *RSAKey) PublicKey() *rsa.PublicKey {
-	return &key.key.PublicKey
+func (k *RSAKey) PublicKey() *rsa.PublicKey {
+	return &k.key.PublicKey
 }
 
 // PublicKeyBytes returns the public key in PKIX or PKCS #1 format.
 // PKCS #1 is not recommended for security as it's considered weak and
 // can potentially be broken by modern computational capabilities.
-func (key *RSAKey) PublicKeyBytes(usePKCS8 bool) ([]byte, error) {
+func (k *RSAKey) PublicKeyBytes(usePKCS8 bool) ([]byte, error) {
 	if usePKCS8 {
-		return x509.MarshalPKIXPublicKey(&key.key.PublicKey)
+		return x509.MarshalPKIXPublicKey(&k.key.PublicKey)
 	} else {
-		return x509.MarshalPKCS1PublicKey(&key.key.PublicKey), nil
+		return x509.MarshalPKCS1PublicKey(&k.key.PublicKey), nil
 	}
 }
 
 // PublicKeyPEM returns the public key in PKIX or PKCS #1 PEM-encoded format.
 // PKCS #1 is not recommended for security as it's considered weak and
 // can potentially be broken by modern computational capabilities.
-func (key *RSAKey) PublicKeyPEM(usePKCS8 bool) ([]byte, error) {
+func (k *RSAKey) PublicKeyPEM(usePKCS8 bool) ([]byte, error) {
 	if usePKCS8 {
-		publicKeyPEM, err := x509.MarshalPKIXPublicKey(&key.key.PublicKey)
+		publicKeyPEM, err := x509.MarshalPKIXPublicKey(&k.key.PublicKey)
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +98,7 @@ func (key *RSAKey) PublicKeyPEM(usePKCS8 bool) ([]byte, error) {
 			Bytes: publicKeyPEM,
 		}), nil
 	} else {
-		publicKeyPEM := x509.MarshalPKCS1PublicKey(&key.key.PublicKey)
+		publicKeyPEM := x509.MarshalPKCS1PublicKey(&k.key.PublicKey)
 		return pem.EncodeToMemory(&pem.Block{
 			Type:  "RSA PUBLIC KEY",
 			Bytes: publicKeyPEM,
@@ -107,7 +107,7 @@ func (key *RSAKey) PublicKeyPEM(usePKCS8 bool) ([]byte, error) {
 }
 
 // IssueCertificateBytes issue a self-signed certificate in DER format.
-func (key *RSAKey) IssueCertificateBytes(subject pkix.Name, algo x509.SignatureAlgorithm, options *x509.Certificate) ([]byte, error) {
+func (k *RSAKey) IssueCertificateBytes(subject pkix.Name, algo x509.SignatureAlgorithm, options *x509.Certificate) ([]byte, error) {
 	// Create a new certificate template
 	if options == nil {
 		options = &x509.Certificate{}
@@ -116,7 +116,7 @@ func (key *RSAKey) IssueCertificateBytes(subject pkix.Name, algo x509.SignatureA
 	options.SignatureAlgorithm = algo
 
 	// Generate the certificate
-	certDER, err := x509.CreateCertificate(rand.Reader, options, options, &key.key.PublicKey, key.key)
+	certDER, err := x509.CreateCertificate(rand.Reader, options, options, &k.key.PublicKey, k.key)
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +124,8 @@ func (key *RSAKey) IssueCertificateBytes(subject pkix.Name, algo x509.SignatureA
 }
 
 // IssueCertificatePEM issue a self-signed certificate in PEM format.
-func (key *RSAKey) IssueCertificatePEM(subject pkix.Name, algo x509.SignatureAlgorithm, options *x509.Certificate) ([]byte, error) {
-	certDER, err := key.IssueCertificateBytes(subject, algo, options)
+func (k *RSAKey) IssueCertificatePEM(subject pkix.Name, algo x509.SignatureAlgorithm, options *x509.Certificate) ([]byte, error) {
+	certDER, err := k.IssueCertificateBytes(subject, algo, options)
 	if err != nil {
 		return nil, err
 	}

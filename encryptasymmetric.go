@@ -12,21 +12,21 @@ type asymmetricDriver struct {
 	signer    HashingAlgo
 }
 
-func (driver asymmetricDriver) PublicKey() *rsa.PublicKey {
-	if driver.publicKey != nil {
-		return driver.publicKey
-	} else if driver.key != nil {
-		return driver.key.PublicKey()
+func (a asymmetricDriver) PublicKey() *rsa.PublicKey {
+	if a.publicKey != nil {
+		return a.publicKey
+	} else if a.key != nil {
+		return a.key.PublicKey()
 	}
 	return nil
 }
 
-func (driver asymmetricDriver) Sign(data []byte) ([]byte, error) {
-	if driver.key == nil {
+func (a asymmetricDriver) Sign(data []byte) ([]byte, error) {
+	if a.key == nil {
 		return nil, fmt.Errorf("no private key passed to driver")
 	}
 
-	constructor := HashingInstance(driver.signer)
+	constructor := HashingInstance(a.signer)
 	if constructor == nil {
 		return nil, fmt.Errorf("invalid hash algo passed to driver")
 	}
@@ -38,8 +38,8 @@ func (driver asymmetricDriver) Sign(data []byte) ([]byte, error) {
 	}
 
 	signature, err := rsa.SignPKCS1v15(
-		rand.Reader, driver.key.PrivateKey(),
-		HashingAlg(driver.signer), hasher.Sum(nil),
+		rand.Reader, a.key.PrivateKey(),
+		HashingAlg(a.signer), hasher.Sum(nil),
 	)
 	if err != nil {
 		return nil, err
@@ -47,8 +47,8 @@ func (driver asymmetricDriver) Sign(data []byte) ([]byte, error) {
 	return signature, nil
 }
 
-func (driver asymmetricDriver) ValidateSignature(data []byte, signature []byte) (bool, error) {
-	constructor := HashingInstance(driver.signer)
+func (a asymmetricDriver) ValidateSignature(data []byte, signature []byte) (bool, error) {
+	constructor := HashingInstance(a.signer)
 	if constructor == nil {
 		return false, fmt.Errorf("invalid hash algo passed to driver")
 	}
@@ -60,7 +60,7 @@ func (driver asymmetricDriver) ValidateSignature(data []byte, signature []byte) 
 	}
 
 	err = rsa.VerifyPKCS1v15(
-		driver.PublicKey(), HashingAlg(driver.signer),
+		a.PublicKey(), HashingAlg(a.signer),
 		hasher.Sum(nil), signature,
 	)
 	if err != nil {
@@ -69,15 +69,15 @@ func (driver asymmetricDriver) ValidateSignature(data []byte, signature []byte) 
 	return true, nil
 }
 
-func (driver asymmetricDriver) Encrypt(data []byte) ([]byte, error) {
-	constructor := HashingInstance(driver.signer)
+func (a asymmetricDriver) Encrypt(data []byte) ([]byte, error) {
+	constructor := HashingInstance(a.signer)
 	if constructor == nil {
 		return nil, fmt.Errorf("invalid hash algo passed to driver")
 	}
 
 	encrypted, err := rsa.EncryptOAEP(
 		constructor(), rand.Reader,
-		driver.PublicKey(), data, nil,
+		a.PublicKey(), data, nil,
 	)
 	if err != nil {
 		return nil, err
@@ -86,19 +86,19 @@ func (driver asymmetricDriver) Encrypt(data []byte) ([]byte, error) {
 	return encrypted, nil
 }
 
-func (driver asymmetricDriver) Decrypt(data []byte) ([]byte, error) {
-	if driver.key == nil {
+func (a asymmetricDriver) Decrypt(data []byte) ([]byte, error) {
+	if a.key == nil {
 		return nil, fmt.Errorf("no private key passed to driver")
 	}
 
-	constructor := HashingInstance(driver.signer)
+	constructor := HashingInstance(a.signer)
 	if constructor == nil {
 		return nil, fmt.Errorf("invalid hash algo passed to driver")
 	}
 
 	decrypted, err := rsa.DecryptOAEP(
 		constructor(), rand.Reader,
-		driver.key.PrivateKey(), data, nil,
+		a.key.PrivateKey(), data, nil,
 	)
 	if err != nil {
 		return nil, err
@@ -107,8 +107,8 @@ func (driver asymmetricDriver) Decrypt(data []byte) ([]byte, error) {
 	return decrypted, nil
 }
 
-func (driver asymmetricDriver) EncryptBase64(data []byte) (string, error) {
-	raw, err := driver.Encrypt(data)
+func (a asymmetricDriver) EncryptBase64(data []byte) (string, error) {
+	raw, err := a.Encrypt(data)
 	if err != nil {
 		return "", err
 	}
@@ -117,11 +117,11 @@ func (driver asymmetricDriver) EncryptBase64(data []byte) (string, error) {
 	return string(encoded), nil
 }
 
-func (driver asymmetricDriver) DecryptBase64(encrypted string) ([]byte, error) {
+func (a asymmetricDriver) DecryptBase64(encrypted string) ([]byte, error) {
 	raw, err := base64Decode([]byte(encrypted))
 	if err != nil {
 		return nil, err
 	}
 
-	return driver.Decrypt(raw)
+	return a.Decrypt(raw)
 }

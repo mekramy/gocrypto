@@ -16,16 +16,16 @@ type argon2Hasher struct {
 	keyLength   uint32
 }
 
-func (driver argon2Hasher) Hash(data []byte) ([]byte, error) {
-	salt, err := NewSimpleKey(SimpleLength(driver.saltLength))
+func (a argon2Hasher) Hash(data []byte) ([]byte, error) {
+	salt, err := NewSimpleKey(SimpleLength(a.saltLength))
 	if err != nil {
 		return nil, err
 	}
 
 	key := argon2.IDKey(
 		data, salt,
-		driver.iterations, driver.memory,
-		driver.parallelism, driver.keyLength,
+		a.iterations, a.memory,
+		a.parallelism, a.keyLength,
 	)
 
 	encodedSalt, _ := base64Encode(salt)
@@ -34,23 +34,23 @@ func (driver argon2Hasher) Hash(data []byte) ([]byte, error) {
 		[]byte(
 			fmt.Sprintf(
 				"%s#%d$%d$%d$%d#%s",
-				string(encodedSalt), argon2.Version, driver.memory,
-				driver.iterations, driver.parallelism, string(encodedKey),
+				string(encodedSalt), argon2.Version, a.memory,
+				a.iterations, a.parallelism, string(encodedKey),
 			),
 		),
 	)
 }
 
-func (driver argon2Hasher) Validate(hash, data []byte) (bool, error) {
-	salt, key, _, _, _, _, err := driver.decodeHash(hash)
+func (a argon2Hasher) Validate(hash, data []byte) (bool, error) {
+	salt, key, _, _, _, _, err := a.decodeHash(hash)
 	if err != nil {
 		return false, err
 	}
 
 	otherKey := argon2.IDKey(
 		data, salt,
-		driver.iterations, driver.memory,
-		driver.parallelism, driver.keyLength,
+		a.iterations, a.memory,
+		a.parallelism, a.keyLength,
 	)
 
 	// Check that the contents of the hashed passwords are identical. Note
@@ -64,7 +64,7 @@ func (driver argon2Hasher) Validate(hash, data []byte) (bool, error) {
 
 // decodeHash Decode hash and extract args
 // returns salt, key, version, memory, iterations, parallelism and error
-func (driver argon2Hasher) decodeHash(hash []byte) ([]byte, []byte, int, uint32, uint32, uint8, error) {
+func (a argon2Hasher) decodeHash(hash []byte) ([]byte, []byte, int, uint32, uint32, uint8, error) {
 	// Decode
 	raw, err := base64Decode(hash)
 	if err != nil {

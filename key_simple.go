@@ -28,21 +28,21 @@ func NewSimpleKey(length SimpleLength) (SimpleKey, error) {
 type SimpleKey []byte
 
 // Bytes returns the key as a byte slice.
-func (key SimpleKey) Bytes() []byte {
-	return key
+func (k SimpleKey) Bytes() []byte {
+	return k
 }
 
 // Hex returns the key as a hex string.
-func (key SimpleKey) Hex() string {
-	return hex.EncodeToString(key)
+func (k SimpleKey) Hex() string {
+	return hex.EncodeToString(k)
 }
 
 // Base64 returns the key as a base64 string.
-func (key SimpleKey) Base64() string {
-	return base64.StdEncoding.EncodeToString(key)
+func (k SimpleKey) Base64() string {
+	return base64.StdEncoding.EncodeToString(k)
 }
 
 // String implement fmt.Stringer interface.
-func (key SimpleKey) String() string {
-	return key.Hex()
+func (k SimpleKey) String() string {
+	return k.Hex()
 }

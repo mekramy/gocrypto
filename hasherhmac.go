@@ -10,17 +10,17 @@ type hmacHasher struct {
 	algo HashingAlgo
 }
 
-func (driver hmacHasher) Hash(data []byte) ([]byte, error) {
-	if len(driver.key) == 0 || string(driver.key) == "" {
+func (h hmacHasher) Hash(data []byte) ([]byte, error) {
+	if len(h.key) == 0 || string(h.key) == "" {
 		return nil, fmt.Errorf("empty key passed to hasher")
 	}
 
-	constructor := HashingInstance(driver.algo)
+	constructor := HashingInstance(h.algo)
 	if constructor == nil {
 		return nil, fmt.Errorf("invalid hash algo passed to hasher")
 	}
 
-	hasher := hmac.New(constructor, driver.key)
+	hasher := hmac.New(constructor, h.key)
 	_, err := hasher.Write([]byte(data))
 	if err != nil {
 		return nil, err
@@ -29,8 +29,8 @@ func (driver hmacHasher) Hash(data []byte) ([]byte, error) {
 	return base64Encode(hasher.Sum(nil))
 }
 
-func (driver hmacHasher) Validate(hash, data []byte) (bool, error) {
-	newHash, err := driver.Hash(data)
+func (h hmacHasher) Validate(hash, data []byte) (bool, error) {
+	newHash, err := h.Hash(data)
 	if err != nil {
 		return false, err
 	}

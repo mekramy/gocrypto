@@ -14,13 +14,13 @@ type symmetricDriver struct {
 	signer HashingAlgo
 }
 
-func (driver symmetricDriver) Sign(data []byte) ([]byte, error) {
-	constructor := HashingInstance(driver.signer)
+func (s symmetricDriver) Sign(data []byte) ([]byte, error) {
+	constructor := HashingInstance(s.signer)
 	if constructor == nil {
 		return nil, fmt.Errorf("invalid hash algo passed to driver")
 	}
 
-	hasher := hmac.New(constructor, driver.key)
+	hasher := hmac.New(constructor, s.key)
 	_, err := hasher.Write(data)
 	if err != nil {
 		return nil, err
@@ -29,13 +29,13 @@ func (driver symmetricDriver) Sign(data []byte) ([]byte, error) {
 	return hasher.Sum(nil), nil
 }
 
-func (driver symmetricDriver) ValidateSignature(data []byte, signature []byte) (bool, error) {
-	constructor := HashingInstance(driver.signer)
+func (s symmetricDriver) ValidateSignature(data []byte, signature []byte) (bool, error) {
+	constructor := HashingInstance(s.signer)
 	if constructor == nil {
 		return false, fmt.Errorf("invalid hash algo passed to driver")
 	}
 
-	hasher := hmac.New(constructor, driver.key)
+	hasher := hmac.New(constructor, s.key)
 	_, err := hasher.Write(data)
 	if err != nil {
 		return false, err
@@ -44,8 +44,8 @@ func (driver symmetricDriver) ValidateSignature(data []byte, signature []byte) (
 	return hmac.Equal(signature, hasher.Sum(nil)), nil
 }
 
-func (driver symmetricDriver) Encrypt(data []byte) ([]byte, error) {
-	block, err := aes.NewCipher(driver.key)
+func (s symmetricDriver) Encrypt(data []byte) ([]byte, error) {
+	block, err := aes.NewCipher(s.key)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +64,8 @@ func (driver symmetricDriver) Encrypt(data []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, data, nil), nil
 }
 
-func (driver symmetricDriver) Decrypt(data []byte) ([]byte, error) {
-	block, err := aes.NewCipher(driver.key)
+func (s symmetricDriver) Decrypt(data []byte) ([]byte, error) {
+	block, err := aes.NewCipher(s.key)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +86,8 @@ func (driver symmetricDriver) Decrypt(data []byte) ([]byte, error) {
 
 }
 
-func (driver symmetricDriver) EncryptBase64(data []byte) (string, error) {
-	raw, err := driver.Encrypt(data)
+func (s symmetricDriver) EncryptBase64(data []byte) (string, error) {
+	raw, err := s.Encrypt(data)
 	if err != nil {
 		return "", err
 	}
@@ -96,11 +96,11 @@ func (driver symmetricDriver) EncryptBase64(data []byte) (string, error) {
 	return string(encoded), nil
 }
 
-func (driver symmetricDriver) DecryptBase64(encrypted string) ([]byte, error) {
+func (s symmetricDriver) DecryptBase64(encrypted string) ([]byte, error) {
 	raw, err := base64Decode([]byte(encrypted))
 	if err != nil {
 		return nil, err
 	}
 
-	return driver.Decrypt(raw)
+	return s.Decrypt(raw)
 }

@@ -8,8 +8,8 @@ type bcryptHasher struct {
 	cost int
 }
 
-func (driver bcryptHasher) Hash(data []byte) ([]byte, error) {
-	encrypted, err := bcrypt.GenerateFromPassword(data, driver.cost)
+func (b bcryptHasher) Hash(data []byte) ([]byte, error) {
+	encrypted, err := bcrypt.GenerateFromPassword(data, b.cost)
 	if err != nil {
 		return nil, err
 	}
@@ -17,7 +17,7 @@ func (driver bcryptHasher) Hash(data []byte) ([]byte, error) {
 	return base64Encode(encrypted)
 }
 
-func (driver bcryptHasher) Validate(hash, data []byte) (bool, error) {
+func (b bcryptHasher) Validate(hash, data []byte) (bool, error) {
 	raw, err := base64Decode(hash)
 	if err != nil {
 		return false, err
